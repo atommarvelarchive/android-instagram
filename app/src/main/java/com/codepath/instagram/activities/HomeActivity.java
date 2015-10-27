@@ -1,11 +1,24 @@
 package com.codepath.instagram.activities;
 
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.codepath.instagram.R;
+import com.codepath.instagram.helpers.InstagramPostsAdapter;
+import com.codepath.instagram.helpers.Utils;
+import com.codepath.instagram.models.InstagramPost;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class HomeActivity extends AppCompatActivity {
@@ -15,6 +28,27 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        // Lookup the recyclerview in activity layout
+        RecyclerView rvPosts = (RecyclerView) findViewById(R.id.rvPosts);
+        // Create adapter passing in the sample user data
+        InstagramPostsAdapter adapter = new InstagramPostsAdapter(fetchPosts());
+        // Attach the adapter to the recyclerview to populate items
+        rvPosts.setAdapter(adapter);
+        // Set layout manager to position the items
+        rvPosts.setLayoutManager(new LinearLayoutManager(this));
+    }
+
+    private List<InstagramPost> fetchPosts() {
+        List<InstagramPost> posts = new ArrayList<>();
+        try {
+            JSONObject jsonObject =  Utils.loadJsonFromAsset(this, "popular.json");
+            posts = Utils.decodePostsFromJsonResponse(jsonObject);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return posts;
     }
 
     @Override
@@ -35,7 +69,6 @@ public class HomeActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 }
