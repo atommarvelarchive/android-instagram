@@ -1,24 +1,28 @@
 package com.codepath.instagram.helpers;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.v7.widget.RecyclerView;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
-import android.text.style.ForegroundColorSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.codepath.instagram.R;
+import com.codepath.instagram.activities.CommentsActivity;
+import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramImage;
 import com.codepath.instagram.models.InstagramPost;
 import com.codepath.instagram.models.InstagramUser;
 import com.facebook.drawee.view.SimpleDraweeView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,20 +42,20 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         LayoutInflater inflater = LayoutInflater.from(context);
 
         // Inflate the custom layout
-        View contactView = inflater.inflate(R.layout.layout_item_post, parent, false);
+        View postView = inflater.inflate(R.layout.layout_item_post, parent, false);
 
         // Return a new holder instance
-        ViewHolder viewHolder = new ViewHolder(contactView);
+        ViewHolder viewHolder = new ViewHolder(postView);
         return viewHolder;
     }
 
     @Override
     public void onBindViewHolder(ViewHolder viewHolder, int position) {
         // Get the data model based on position
-        Context context = viewHolder.sdvProfile.getContext();
+        final Context context = viewHolder.sdvProfilePic.getContext();
         InstagramPost post = instagramPosts.get(position);
         InstagramUser user = post.user;
-        InstagramImage image = post.image;
+        final InstagramImage image = post.image;
 
         // Set item views based on the data model
         // Username
@@ -59,31 +63,74 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         // Created Time
         viewHolder.tvCreatedTime.setText(DateUtils.getRelativeTimeSpanString(post.createdTime * 1000));
         // Profile picture
-        viewHolder.sdvProfile.setImageURI(Uri.parse(user.profilePictureUrl));
+        viewHolder.sdvProfilePic.setImageURI(Uri.parse(user.profilePictureUrl));
         // Picture
         viewHolder.sdvPic.setImageURI(Uri.parse(image.imageUrl));
         viewHolder.sdvPic.setAspectRatio(image.imageWidth / image.imageHeight);
         // Likes
         viewHolder.tvLikes.setText(" " + Utils.formatNumberForDisplay(post.likesCount) + " likes");
         // Caption
-        viewHolder.tvCaption.setText(getCaptionSpan(context, post));
+        viewHolder.tvCaption.setText(UIUtils.getCommentSpan(context, post.user.userName, post.caption));
+        // Comments
+        renderComments(context, viewHolder.llComments, post);
+        // Share
+        viewHolder.ibMore.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ImageUtils.getBitmapFromUri(context, Uri.parse(image.imageUrl), new ImageUtils.ImageUtilCallback() {
+                    @Override
+                    public void onBitmapLoaded(Bitmap bitmap) {
+                        String path = MediaStore.Images.Media.insertImage(context.getContentResolver(),
+                                bitmap, "Image Description", null);
+                        Uri bmpUri = Uri.parse(path);
+                        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                        shareIntent.putExtra(Intent.EXTRA_STREAM, bmpUri);
+                        shareIntent.setType("image/*");
+                        context.startActivity(Intent.createChooser(shareIntent, "Share Image"));
+                    }
+                });
+            }
+        });
+
 
     }
 
-    private SpannableStringBuilder getCaptionSpan(Context context, InstagramPost post) {
-        ForegroundColorSpan blueForegroundColorSpan = new ForegroundColorSpan(
-                context.getResources().getColor(R.color.blue_text));
-        SpannableStringBuilder ssb = new SpannableStringBuilder(post.user.userName);
-        ssb.setSpan(
-                blueForegroundColorSpan,
-                0,
-                ssb.length(),
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        if (!TextUtils.isEmpty(post.caption)) {
-            ssb.append(" " + post.caption);
+    private void renderComments(final Context context, LinearLayout llComments, final InstagramPost post) {
+        List<InstagramComment> comments = post.comments;
+        int commentCount = post.commentsCount;
+        // Clear out old comments
+        llComments.removeAllViews();
+
+        // If there are more than 2 comments, add a clickable TextView that allows you to view all comments in a new activity
+        if (commentCount > 2) {
+            TextView tvViewComments = new TextView(context);
+            tvViewComments.setText("View all " + Utils.formatNumberForDisplay(commentCount) + " comments");
+            tvViewComments.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    // Launch Activity that lets you view all the comments
+                    Intent intent = new Intent(context, CommentsActivity.class);
+                    intent.putExtra(CommentsActivity.EXTRA_MEDIA_ID, post.mediaId);
+                    context.startActivity(intent);
+                }
+            });
+            llComments.addView(tvViewComments);
         }
-        return ssb;
+
+        // Add comments to LinearLayout
+        if (!comments.isEmpty()) {
+            int commentRenderCount = commentCount >= 2 ? 2 : 1;
+            List<InstagramComment> commentsToRender = new ArrayList<>(comments.subList(0, commentRenderCount));
+            for (InstagramComment comment : commentsToRender) {
+                View commentView = LayoutInflater.from(context).inflate(R.layout.layout_item_text_comment, llComments, false);
+                TextView tvComment = (TextView) commentView.findViewById(R.id.tvComment);
+                tvComment.setText(UIUtils.getCommentSpan(context, comment.user.userName, comment.text));
+                llComments.addView(commentView);
+            }
+        }
     }
+
+
 
     @Override
     public int getItemCount() {
@@ -96,8 +143,10 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         public TextView tvCreatedTime;
         public TextView tvLikes;
         public TextView tvCaption;
-        public SimpleDraweeView sdvProfile;
+        public SimpleDraweeView sdvProfilePic;
         public SimpleDraweeView sdvPic;
+        public LinearLayout llComments;
+        public ImageButton ibMore;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -106,8 +155,10 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
             tvCreatedTime = (TextView) itemView.findViewById(R.id.tvCreatedTime);
             tvLikes = (TextView) itemView.findViewById(R.id.tvLikes);
             tvCaption = (TextView) itemView.findViewById(R.id.tvCaption);
-            sdvProfile = (SimpleDraweeView) itemView.findViewById(R.id.sdvProfilePic);
+            sdvProfilePic = (SimpleDraweeView) itemView.findViewById(R.id.sdvProfilePic);
             sdvPic = (SimpleDraweeView) itemView.findViewById(R.id.sdvPic);
+            llComments = (LinearLayout) itemView.findViewById(R.id.llComments);
+            ibMore = (ImageButton) itemView.findViewById(R.id.ibMore);
 
         }
     }

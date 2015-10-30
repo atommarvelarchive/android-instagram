@@ -1,8 +1,7 @@
 package com.codepath.instagram.activities;
 
-import android.os.Bundle;
-import android.os.Debug;
 import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -10,41 +9,42 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.codepath.instagram.R;
+import com.codepath.instagram.helpers.InstagramCommentsAdapter;
 import com.codepath.instagram.helpers.InstagramPostsAdapter;
 import com.codepath.instagram.helpers.Utils;
+import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramPost;
 import com.codepath.instagram.networking.InstagramClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import cz.msebera.android.httpclient.Header;
 
+public class CommentsActivity extends AppCompatActivity {
 
-public class HomeActivity extends AppCompatActivity {
-    private static final String TAG = "HomeActivity";
+    public static final String EXTRA_MEDIA_ID = "mediaId";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_comments);
 
-        InstagramClient.getPopularFeed(new JsonHttpResponseHandler() {
+        String mediaId = getIntent().getStringExtra(EXTRA_MEDIA_ID);
+
+        InstagramClient.getCommentsFromMediaId(mediaId, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
-                List<InstagramPost> posts = Utils.decodePostsFromJsonResponse(response);
+                List<InstagramComment> comments = Utils.decodeCommentsFromJsonResponse(response);
                 // Lookup the recyclerview in activity layout
-                RecyclerView rvPosts = (RecyclerView) findViewById(R.id.rvPosts);
-                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(HomeActivity.this);
+                RecyclerView rvPosts = (RecyclerView) findViewById(R.id.rvComments);
+                RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(CommentsActivity.this);
                 // Root JSON in response is an dictionary i.e { "data : [ ... ] }
                 // Handle resulting parsed JSON response here
                 // Create adapter passing in the sample user data
-                InstagramPostsAdapter adapter = new InstagramPostsAdapter(posts);
+                InstagramCommentsAdapter adapter = new InstagramCommentsAdapter(comments);
                 // Attach the adapter to the recyclerview to populate items
                 rvPosts.setAdapter(adapter);
                 // Set layout manager to position the items
@@ -59,23 +59,10 @@ public class HomeActivity extends AppCompatActivity {
         });
     }
 
-    private List<InstagramPost> fetchPosts() {
-        List<InstagramPost> posts = new ArrayList<>();
-        try {
-            JSONObject jsonObject =  Utils.loadJsonFromAsset(this, "popular.json");
-            posts = Utils.decodePostsFromJsonResponse(jsonObject);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return posts;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_home, menu);
+        getMenuInflater().inflate(R.menu.menu_comments, menu);
         return true;
     }
 
@@ -90,6 +77,7 @@ public class HomeActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 }

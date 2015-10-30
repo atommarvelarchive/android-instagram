@@ -33,7 +33,7 @@
         android:id="@+id/tvCreatedTime"
         android:layout_alignParentTop="true"
         android:layout_alignParentRight="true"
-        android:paddingRight="@dimen/activity_horizontal_margin"/>
+        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
 
     <com.facebook.drawee.view.SimpleDraweeView
         android:id="@+id/sdvPic"
@@ -58,12 +58,31 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text=" Likes"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Caption"
         android:id="@+id/tvCaption"
         android:layout_below="@id/tvLikes"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="24dp"
         android:paddingLeft="@dimen/activity_horizontal_margin"/>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tvCaption"
+        android:id="@+id/llComments"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_marginBottom="24dp" />
+
+    <ImageButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ibMore"
+        android:layout_alignTop="@+id/tvLikes"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/ic_more_dots"
+        android:layout_marginRight="@dimen/activity_horizontal_margin"/>
 
 </RelativeLayout>
