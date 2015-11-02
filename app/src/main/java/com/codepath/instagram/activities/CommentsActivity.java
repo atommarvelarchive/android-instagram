@@ -9,12 +9,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.codepath.instagram.R;
-import com.codepath.instagram.helpers.InstagramCommentsAdapter;
-import com.codepath.instagram.helpers.InstagramPostsAdapter;
+import com.codepath.instagram.core.MainApplication;
+import com.codepath.instagram.helpers.adapters.InstagramCommentsAdapter;
 import com.codepath.instagram.helpers.Utils;
 import com.codepath.instagram.models.InstagramComment;
-import com.codepath.instagram.models.InstagramPost;
-import com.codepath.instagram.networking.InstagramClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import org.json.JSONObject;
@@ -34,7 +32,7 @@ public class CommentsActivity extends AppCompatActivity {
 
         String mediaId = getIntent().getStringExtra(EXTRA_MEDIA_ID);
 
-        InstagramClient.getCommentsFromMediaId(mediaId, new JsonHttpResponseHandler() {
+        MainApplication.getRestClient().getCommentsFromMediaId(mediaId, new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
                 List<InstagramComment> comments = Utils.decodeCommentsFromJsonResponse(response);

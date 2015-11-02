@@ -1,4 +1,4 @@
-package com.codepath.instagram.helpers;
+package com.codepath.instagram.helpers.adapters;
 
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +16,9 @@ import android.widget.TextView;
 
 import com.codepath.instagram.R;
 import com.codepath.instagram.activities.CommentsActivity;
+import com.codepath.instagram.helpers.ImageUtils;
+import com.codepath.instagram.helpers.UIUtils;
+import com.codepath.instagram.helpers.Utils;
 import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramImage;
 import com.codepath.instagram.models.InstagramPost;

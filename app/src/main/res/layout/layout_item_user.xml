@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:fresco="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.facebook.drawee.view.SimpleDraweeView
+        android:id="@+id/sdvProfilePic"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        fresco:roundAsCircle="true"
+        fresco:placeholderImage="@drawable/ic_profile"
+        fresco:actualImageScaleType="fitCenter"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginRight="12dp"
+        android:layout_marginBottom="16dp"
+        android:paddingLeft="@dimen/activity_horizontal_margin" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="UserName"
+        android:id="@+id/tvUsername"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/sdvProfilePic"
+        android:layout_toEndOf="@+id/sdvProfilePic"
+        android:layout_marginTop="12dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="FullName"
+        android:id="@+id/tvFullname"
+        android:layout_below="@+id/tvUsername"
+        android:layout_alignLeft="@+id/tvUsername"
+        android:layout_alignStart="@+id/tvUsername"
+        android:layout_marginBottom="12dp"/>
+
+</RelativeLayout>

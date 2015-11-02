@@ -1,4 +1,4 @@
-package com.codepath.instagram.helpers;
+package com.codepath.instagram.helpers.adapters;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.codepath.instagram.R;
+import com.codepath.instagram.helpers.UIUtils;
 import com.codepath.instagram.models.InstagramComment;
 import com.codepath.instagram.models.InstagramUser;
 import com.facebook.drawee.view.SimpleDraweeView;
