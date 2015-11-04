@@ -4,8 +4,8 @@
 
 This is the project used for CodePath's Fast Track course. It's an Instagram Client.
 
-## Assignment 3 gif
-![Assignment 2](http://i.imgur.com/cgFWRUE.gif)
+## Assignment 4 gif
+![](http://i.imgur.com/xUGH3h0.gif)
 
 ## What's Included in the starter project
 * <tt>com.codepath.instagram.models</tt> => We've built out the models so you can work directly with post, user, and image objects instead of having to deal with json.
