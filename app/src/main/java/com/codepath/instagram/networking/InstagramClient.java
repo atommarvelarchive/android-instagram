@@ -6,12 +6,10 @@ import android.net.NetworkInfo;
 
 import com.codepath.instagram.helpers.Constants;
 import com.codepath.oauth.OAuthBaseClient;
-import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 import org.scribe.builder.api.Api;
-import org.scribe.model.Token;
 
 
 /**
@@ -24,8 +22,8 @@ public class InstagramClient extends OAuthBaseClient {
     private static final String COMMENTS_ENTRY_POINT = "https://api.instagram.com/v1/media/" + MEDIA_ID_PLACEHOLDER + "/comments";
     private static final String CLIENT_ID = "7f5321002cc04089b778e463cd87953f";
     private static final String CLIENT_SECRET = "a9980e6933814fd3848dba9f6b370b63";
-    private static final String REST_URL = "https://api.instagram.com/v1/";
-    private static final String SELF_FEED = "users/self/feed";
+    public static final String REST_URL = "https://api.instagram.com/v1/";
+    public static final String SELF_FEED = "users/self/feed";
     private static final String USER_SEARCH = "users/search";
     private static final String TAG_SEARCH = "tags/search";
 
@@ -46,7 +44,7 @@ public class InstagramClient extends OAuthBaseClient {
         client.get(POPULAR_ENTRY_POINT, params, responseHandler);
     }
 
-    private Boolean isNetworkAvailable(Context context) {
+    public Boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -60,6 +58,7 @@ public class InstagramClient extends OAuthBaseClient {
     }
 
     public void getHomeTimeline(JsonHttpResponseHandler responseHandler) {
+
         RequestParams params = new RequestParams();
         params.put("access_token", client.getAccessToken().getToken());
         client.get(REST_URL + SELF_FEED, params, responseHandler);

@@ -148,17 +148,64 @@ public class InstagramClientDatabase extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // TODO: Implement this method
+        if (oldVersion != newVersion) {
+            // Simplest implementation is to drop all old tables and recreate them
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_POSTS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_COMMENTS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_POST_COMMENTS);
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGES);
+            onCreate(db);
+        }
     }
 
     public void emptyAllTables() {
-        // TODO: Implement this method to delete all rows from all tables
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            db.delete(TABLE_POST_COMMENTS, null, null);
+            db.delete(TABLE_POSTS, null, null);
+            db.delete(TABLE_COMMENTS, null, null);
+            db.delete(TABLE_USERS, null, null);
+            db.delete(TABLE_POSTS, null, null);
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     public void addInstagramPosts(List<InstagramPost> posts) {
-        // TODO: Implement this method
+        if (posts == null) {
+            throw new IllegalArgumentException(String.format("Attemping to add a null image to %s", DATABASE_NAME));
+        }
         // Take a look at the helper methods addImage, addComment, etc as you implement this method
         // It's also a good idea to do this work in a transaction
+        SQLiteDatabase db = getWritableDatabase();
+        db.beginTransaction();
+        try {
+            for (InstagramPost post : posts) {
+                ContentValues pValues = new ContentValues();
+                pValues.put(KEY_POST_MEDIA_ID, post.mediaId);
+                pValues.put(KEY_POST_CAPTION, post.caption);
+                pValues.put(KEY_POST_LIKES_COUNT, post.likesCount);
+                pValues.put(KEY_POST_COMMENTS_COUNT, post.commentsCount);
+                pValues.put(KEY_POST_CREATED_TIME, post.createdTime);
+                pValues.put(KEY_POST_USER_ID_FK, addorUpdateUser(post.user));
+                pValues.put(KEY_POST_IMAGE_ID_FK, addImage(post.image));
+
+                long postId = db.insert(TABLE_POSTS, null, pValues);
+
+                if (post.comments != null) {
+                    for (InstagramComment comment : post.comments) {
+                        long commentId = addComment(comment, postId);
+                    }
+                }
+
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
     }
 
     // Poor man's "upsert".

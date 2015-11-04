@@ -121,7 +121,7 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         }
 
         // Add comments to LinearLayout
-        if (!comments.isEmpty()) {
+        if (commentCount > 0) {
             int commentRenderCount = commentCount >= 2 ? 2 : 1;
             List<InstagramComment> commentsToRender = new ArrayList<>(comments.subList(0, commentRenderCount));
             for (InstagramComment comment : commentsToRender) {
@@ -133,7 +133,17 @@ public class InstagramPostsAdapter extends RecyclerView.Adapter<InstagramPostsAd
         }
     }
 
+    // Clean all elements of the recycler
+    public void clear() {
+        instagramPosts.clear();
+        notifyDataSetChanged();
+    }
 
+    // Add a list of items
+    public void addAll(List<InstagramPost> list) {
+        instagramPosts.addAll(list);
+        notifyDataSetChanged();
+    }
 
     @Override
     public int getItemCount() {
