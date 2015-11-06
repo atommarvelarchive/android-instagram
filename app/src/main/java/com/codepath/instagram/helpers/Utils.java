@@ -78,4 +78,26 @@ public class Utils {
         }
         return jsonArray;
     }
+
+    public static JSONObject getDataJsonObj(JSONObject jsonObject) {
+        JSONObject dataObj = null;
+        if (jsonObject != null) {
+            dataObj = jsonObject.optJSONObject("data");
+        }
+        return dataObj;
+    }
+
+    public static String getNextSrc(JSONObject jsonObject) {
+        JSONObject pageObj = null;
+        String result = "";
+        if (jsonObject != null) {
+            pageObj = jsonObject.optJSONObject("pagination");
+        }
+        try {
+            result = pageObj.getString("next_url");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
 }

@@ -17,8 +17,9 @@ import android.view.ViewGroup;
 
 import com.codepath.instagram.R;
 import com.codepath.instagram.core.MainApplication;
-import com.codepath.instagram.helpers.adapters.InstagramPostsAdapter;
+import com.codepath.instagram.helpers.EndlessScrollListener;
 import com.codepath.instagram.helpers.Utils;
+import com.codepath.instagram.helpers.adapters.InstagramPostsAdapter;
 import com.codepath.instagram.models.InstagramPost;
 import com.codepath.instagram.models.InstagramPosts;
 import com.codepath.instagram.networking.NetworkService;
@@ -38,13 +39,20 @@ public class PostsFragment extends Fragment {
 
     private Context mContext;
     private View mLayout;
+    private String mSrc;
+    private String mNextSrc;
+    private RecyclerView rvPosts;
+    private SwipeRefreshLayout swipeContainer;
+    private InstagramPostsAdapter adapter;
+    private LinearLayoutManager layoutManager;
     private JsonHttpResponseHandler handler =  new JsonHttpResponseHandler() {
         @Override
         public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
             List<InstagramPost> posts = Utils.decodePostsFromJsonResponse(response);
-            InstagramClientDatabase db =  InstagramClientDatabase.getInstance(mContext);
+            mNextSrc = Utils.getNextSrc(response);
+            /*InstagramClientDatabase db =  InstagramClientDatabase.getInstance(mContext);
             db.emptyAllTables();
-            db.addInstagramPosts(posts);
+            db.addInstagramPosts(posts);*/
             loadUI(posts);
         }
 
@@ -55,26 +63,40 @@ public class PostsFragment extends Fragment {
         }
 
     };
+    private JsonHttpResponseHandler infiniteHandler = new JsonHttpResponseHandler() {
+        @Override
+        public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+            List<InstagramPost> posts = Utils.decodePostsFromJsonResponse(response);
+            appendToList(posts);
+            mNextSrc = Utils.getNextSrc(response);
+
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         mLayout = inflater.inflate(R.layout.fragment_posts, container, false);
         mContext = container.getContext();
+        initUI();
         if (MainApplication.getRestClient().isNetworkAvailable(mContext)) {
-            MainApplication.getRestClient().getHomeTimeline(handler);
+            MainApplication.getRestClient().getPostsFromSource(mSrc, handler);
         } else {
-            InstagramClientDatabase db =  InstagramClientDatabase.getInstance(mContext);
+            /*InstagramClientDatabase db =  InstagramClientDatabase.getInstance(mContext);
             List<InstagramPost> posts  = db.getAllInstagramPosts();
-            loadUI(posts);
+            loadUI(posts);*/
         }
         return mLayout;
     }
 
-    private void loadUI(List<InstagramPost> posts) {
-        // Lookup the recyclerview in activity layout
-        RecyclerView rvPosts = (RecyclerView) mLayout.findViewById(R.id.rvPosts);
-        SwipeRefreshLayout swipeContainer = (SwipeRefreshLayout) mLayout.findViewById(R.id.swipeContainer);
+    public void setPostSource(String src) {
+        mSrc = src;
+    }
+
+    private void initUI() {
+        layoutManager = new LinearLayoutManager(mLayout.getContext());
+        rvPosts = (RecyclerView) mLayout.findViewById(R.id.rvPosts);
+        swipeContainer = (SwipeRefreshLayout) mLayout.findViewById(R.id.swipeContainer);
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -82,16 +104,37 @@ public class PostsFragment extends Fragment {
                 //MainApplication.getRestClient().getHomeTimeline(handler);
             }
         });
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(mLayout.getContext());
+        rvPosts.setOnScrollListener(new EndlessScrollListener(layoutManager) {
+            @Override
+            public boolean onLoadMore(int page) {
+                if (!mNextSrc.isEmpty()) {
+                    MainApplication.getRestClient().getPostsFromSource(mNextSrc, infiniteHandler);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
+    }
+
+    private void loadUI(List<InstagramPost> posts) {
+        // Lookup the recyclerview in activity layout
+
         // Root JSON in response is an dictionary i.e { "data : [ ... ] }
         // Handle resulting parsed JSON response here
         // Create adapter passing in the sample user data
-        InstagramPostsAdapter adapter = new InstagramPostsAdapter(posts);
+        adapter = new InstagramPostsAdapter(posts);
         // Attach the adapter to the recyclerview to populate items
         rvPosts.setAdapter(adapter);
         // Set layout manager to position the items
         rvPosts.setLayoutManager(layoutManager);
         swipeContainer.setRefreshing(false);
+    }
+
+    private void appendToList(List<InstagramPost> posts) {
+        int newItemIdx = adapter.getItemCount();
+        adapter.addAll(posts);
+        adapter.notifyItemRangeInserted(newItemIdx, posts.size());
     }
 
     @Override

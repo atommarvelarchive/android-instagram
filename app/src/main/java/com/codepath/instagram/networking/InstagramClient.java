@@ -18,8 +18,11 @@ import org.scribe.builder.api.Api;
 public class InstagramClient extends OAuthBaseClient {
 
     private static final String MEDIA_ID_PLACEHOLDER = "{media-id}";
+    public static final String USER_ID_PLACEHOLDER = "{user-id}";
     private static final String POPULAR_ENTRY_POINT = "https://api.instagram.com/v1/media/popular";
-    private static final String COMMENTS_ENTRY_POINT = "https://api.instagram.com/v1/media/" + MEDIA_ID_PLACEHOLDER + "/comments";
+    private static final String COMMENTS_ENTRY_POINT = "/media/" + MEDIA_ID_PLACEHOLDER + "/comments";
+    public static final String USERS_RECENT_POSTS = "users/"+USER_ID_PLACEHOLDER+"/media/recent/";
+    private static final String USER_DATA_ENTRY_POINT = "users/"+USER_ID_PLACEHOLDER+"/?access_token=ACCESS-TOKEN";
     private static final String CLIENT_ID = "7f5321002cc04089b778e463cd87953f";
     private static final String CLIENT_SECRET = "a9980e6933814fd3848dba9f6b370b63";
     public static final String REST_URL = "https://api.instagram.com/v1/";
@@ -44,6 +47,12 @@ public class InstagramClient extends OAuthBaseClient {
         client.get(POPULAR_ENTRY_POINT, params, responseHandler);
     }
 
+    public void getPostsFromSource(String src, JsonHttpResponseHandler responseHandler) {
+        RequestParams params = new RequestParams();
+        params.put("access_token", client.getAccessToken().getToken());
+        client.get(src, params, responseHandler);
+    }
+
     public Boolean isNetworkAvailable(Context context) {
         ConnectivityManager connectivityManager
                 = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -54,11 +63,10 @@ public class InstagramClient extends OAuthBaseClient {
     public void getCommentsFromMediaId(String mediaId, JsonHttpResponseHandler responseHandler) {
         RequestParams params = new RequestParams();
         params.put("client_id", CLIENT_ID);
-        client.get(COMMENTS_ENTRY_POINT.replace(MEDIA_ID_PLACEHOLDER, mediaId), params, responseHandler);
+        client.get(REST_URL + COMMENTS_ENTRY_POINT.replace(MEDIA_ID_PLACEHOLDER, mediaId), params, responseHandler);
     }
 
     public void getHomeTimeline(JsonHttpResponseHandler responseHandler) {
-
         RequestParams params = new RequestParams();
         params.put("access_token", client.getAccessToken().getToken());
         client.get(REST_URL + SELF_FEED, params, responseHandler);
@@ -76,5 +84,11 @@ public class InstagramClient extends OAuthBaseClient {
         params.put("access_token", client.getAccessToken().getToken());
         params.put("q", query);
         client.get(REST_URL + TAG_SEARCH, params, responseHandler);
+    }
+
+    public void getUserFromId(String userId, JsonHttpResponseHandler responseHandler) {
+        RequestParams params = new RequestParams();
+        params.put("access_token", client.getAccessToken().getToken());
+        client.get(REST_URL + USER_DATA_ENTRY_POINT.replace(USER_ID_PLACEHOLDER, userId), params, responseHandler);
     }
 }
